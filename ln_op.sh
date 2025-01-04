@@ -1,4 +1,4 @@
-  #!/bin/bash
+#!/bin/bash
 
 # Exit immediately if any command fails
 set -e
@@ -39,6 +39,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docke
 echo "Installing additional dependencies for OpenLedger Node..."
 sudo apt-get install -y libgtk-3-0 libnotify4 libnss3 libxss1 libxtst6 xdg-utils libatspi2.0-0 libsecret-1-0 unzip screen
 sudo apt install -y vainfo libva-glx2 libva-drm2 libva-x11-2
+sudo apt install -y mesa-utils libgl1-mesa-glx libegl1-mesa
 
 # Download and install OpenLedger Node
 echo "Downloading and installing OpenLedger Node..."
