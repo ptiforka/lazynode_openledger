@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Exit on error
-set -e
+#set -e
 export DEBIAN_FRONTEND=noninteractive
 
 # Remove old Docker installations
-echo "Removing old Docker versions..."
-sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y docker docker-engine docker.io containerd runc || true
-sudo rm -rf /var/lib/docker /etc/docker
+#echo "Removing old Docker versions..."
+#sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y docker docker-engine docker.io containerd runc || true
+#sudo rm -rf /var/lib/docker /etc/docker
 
 # Install required dependencies
 echo "Installing required dependencies..."
