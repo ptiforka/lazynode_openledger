@@ -46,11 +46,8 @@ fi
 
 # Update package index
 echo "Updating package index..."
-sudo apt-get update -o Dir::Etc::sourcelist="$REPO_FILE" \
-    -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0" || {
-    echo "Failed to update package index. Please check repository configuration."
-    exit 1
-}
+
+sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
 
 # Install Docker
 echo "Installing Docker..."
