@@ -4,31 +4,41 @@
 set -e
 export DEBIAN_FRONTEND=noninteractive
 
+# Suppress kernel upgrade notifications
+echo "Suppressing kernel upgrade notifications..."
+sudo apt-mark hold linux-image-* linux-headers-* systemd systemd-sysv
+
 # Remove old Docker installations
 echo "Removing old Docker versions..."
-sudo apt remove -y docker docker-engine docker.io containerd runc || true
+sudo apt-get purge -y docker docker-engine docker.io containerd runc || true
+sudo rm -rf /var/lib/docker /etc/docker
 
 # Install required dependencies
 echo "Installing required dependencies..."
-sudo apt install -y apt-transport-https ca-certificates curl software-properties-common xvfb
+sudo apt-get update -y
+sudo apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common \
+    gnupg \
+    lsb-release
 
 # Add Docker's official GPG key and repository
 echo "Adding Docker GPG key and repository..."
-GPG_KEY="/usr/share/keyrings/docker-archive-keyring.gpg"
-if [[ -f "$GPG_KEY" ]]; then
-    echo "Docker GPG keyring already exists. Skipping overwrite."
-else
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o "$GPG_KEY" || {
-        echo "Failed to download or write the GPG key. Please check permissions or network connection."
-        exit 1
-    }
-fi
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 
-echo "deb [arch=$(dpkg --print-architecture) signed-by=$GPG_KEY] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+echo \
+"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Update package index
+sudo apt-get update -y
 
 # Install Docker
 echo "Installing Docker..."
-sudo apt install -y docker-ce docker-ce-cli containerd.io || {
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io || {
     echo "Docker installation failed. Check repository configuration or package availability."
     exit 1
 }
@@ -36,7 +46,16 @@ sudo docker --version
 
 # Install additional dependencies for OpenLedger Node
 echo "Installing additional dependencies for OpenLedger Node..."
-sudo apt install -y libgtk-3-0 libnotify4 libnss3 libxss1 libxtst6 xdg-utils libatspi2.0-0 libsecret-1-0
+sudo apt-get install -y --no-install-recommends \
+    libgtk-3-0 \
+    libnotify4 \
+    libnss3 \
+    libxss1 \
+    libxtst6 \
+    xdg-utils \
+    libatspi2.0-0 \
+    libsecret-1-0 \
+    libasound2
 
 # Download and install OpenLedger Node
 echo "Downloading and installing OpenLedger Node..."
@@ -44,23 +63,30 @@ wget https://cdn.openledger.xyz/openledger-node-1.0.0-linux.zip -O openledger-no
     echo "Failed to download OpenLedger Node. Check the URL or network connection."
     exit 1
 }
-sudo apt install -y unzip
+sudo apt-get install -y --no-install-recommends unzip
 unzip openledger-node.zip
 sudo dpkg -i openledger-node-1.0.0.deb || sudo apt-get install -f -y
-sudo apt install -y desktop-file-utils
+sudo apt-get install -y --no-install-recommends desktop-file-utils
 sudo dpkg --configure -a
 
 # Install and configure VNC and XFCE
 echo "Installing VNC and XFCE..."
-sudo apt install -y --no-install-recommends tightvncserver xfce4 xfce4-goodies mesa-utils libgl1-mesa-glx vainfo libva-glx2 libva-drm2 dbus-x11 mesa-utils libegl1-mesa
-sudo apt install -y libasound2
-#sudo apt install -y tightvncserver xfce4 xfce4-goodies mesa-utils libgl1-mesa-glx vainfo libva-glx2 libva-drm2 dbus-x11 mesa-utils libegl1-mesa
-sudo service dbus start
+sudo apt-get install -y --no-install-recommends \
+    tightvncserver \
+    xfce4 \
+    xfce4-goodies \
+    mesa-utils \
+    libgl1-mesa-glx \
+    vainfo \
+    libva-glx2 \
+    libva-drm2 \
+    dbus-x11 \
+    libegl1-mesa
+sudo systemctl is-active --quiet dbus || sudo systemctl start dbus
 
 # Install and configure XRDP
 echo "Installing and configuring XRDP..."
-sudo apt install -y xrdp
-
+sudo apt-get install -y --no-install-recommends xrdp
 sudo systemctl enable xrdp
 sudo systemctl start xrdp
 
@@ -98,7 +124,7 @@ vncserver :1
 
 # Launch OpenLedger Node in a screen session
 echo "Launching OpenLedger Node in a screen session..."
-sudo apt install -y screen
+sudo apt-get install -y --no-install-recommends screen
 screen -dmS openledger bash -c "DISPLAY=:1 openledger-node --no-sandbox &> openledger.logs"
 
 echo "Setup complete. OpenLedger Node is running in a screen session. Logs are available in 'openledger.logs'."
