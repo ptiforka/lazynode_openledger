@@ -22,9 +22,23 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
 
 # Add Docker's official GPG key and repository
 echo "Adding Docker GPG key and repository..."
+# Add Docker's official GPG key and repository
+echo "Checking Docker GPG key and repository..."
 sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
+GPG_KEY_PATH="/etc/apt/keyrings/docker.gpg"
+
+if [[ -f "$GPG_KEY_PATH" ]]; then
+    echo "Docker GPG key already exists. Skipping overwrite."
+else
+    echo "Adding Docker GPG key..."
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee "$GPG_KEY_PATH" > /dev/null
+    sudo chmod a+r "$GPG_KEY_PATH"
+fi
+
+echo \
+"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
 
 echo \
 "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
@@ -62,7 +76,7 @@ wget https://cdn.openledger.xyz/openledger-node-1.0.0-linux.zip -O openledger-no
     exit 1
 }
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends unzip
-unzip openledger-node.zip
+unzip -o openledger-node.zip
 sudo DEBIAN_FRONTEND=noninteractive dpkg -i openledger-node-1.0.0.deb || sudo DEBIAN_FRONTEND=noninteractive apt-get install -f -y
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends desktop-file-utils
 sudo DEBIAN_FRONTEND=noninteractive dpkg --configure -a
