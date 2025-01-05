@@ -10,7 +10,6 @@ sudo apt remove -y docker docker-engine docker.io containerd runc || true
 
 # Install required dependencies
 echo "Installing required dependencies..."
-sudo apt update -y
 sudo apt install -y apt-transport-https ca-certificates curl software-properties-common xvfb
 
 # Add Docker's official GPG key and repository
@@ -29,7 +28,6 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=$GPG_KEY] https://downloa
 
 # Install Docker
 echo "Installing Docker..."
-sudo apt update -y
 sudo apt install -y docker-ce docker-ce-cli containerd.io || {
     echo "Docker installation failed. Check repository configuration or package availability."
     exit 1
