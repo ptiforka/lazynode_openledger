@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit on error
-set -e
+#set -e
 export DEBIAN_FRONTEND=noninteractive
 
 # Remove old Docker installations
@@ -21,8 +21,6 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
     lsb-release
 
 # Add Docker's official GPG key and repository
-echo "Adding Docker GPG key and repository..."
-# Add Docker's official GPG key and repository
 echo "Checking Docker GPG key and repository..."
 sudo mkdir -p /etc/apt/keyrings
 GPG_KEY_PATH="/etc/apt/keyrings/docker.gpg"
@@ -35,17 +33,20 @@ else
     sudo chmod a+r "$GPG_KEY_PATH"
 fi
 
-echo \
-"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-
-echo \
-"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+# Configure Docker repository
+echo "Configuring Docker repository..."
+REPO_FILE="/etc/apt/sources.list.d/docker.list"
+if [[ -f "$REPO_FILE" ]]; then
+    echo "Docker repository already configured. Skipping."
+else
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=$GPG_KEY_PATH] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) stable" | sudo tee "$REPO_FILE" > /dev/null
+fi
 
 # Update package index
 echo "Updating package index..."
+
 sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
 
 # Install Docker
@@ -125,7 +126,6 @@ echo "Setting up VNC password..."
 mkdir -p ~/.vnc
 echo "$password" | vncpasswd -f > ~/.vnc/passwd
 chmod 600 ~/.vnc/passwd
-
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xfonts-base xfonts-75dpi
 
