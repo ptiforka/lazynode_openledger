@@ -52,12 +52,15 @@ sudo dpkg --configure -a
 
 # Install and configure VNC and XFCE
 echo "Installing VNC and XFCE..."
-sudo apt install -y tightvncserver xfce4 xfce4-goodies mesa-utils libgl1-mesa-glx vainfo libva-glx2 libva-drm2 dbus-x11 mesa-utils libegl1-mesa
+sudo apt install -y --no-install-recommends tightvncserver xfce4 xfce4-goodies mesa-utils libgl1-mesa-glx vainfo libva-glx2 libva-drm2 dbus-x11 mesa-utils libegl1-mesa
+sudo apt install -y libasound2
+#sudo apt install -y tightvncserver xfce4 xfce4-goodies mesa-utils libgl1-mesa-glx vainfo libva-glx2 libva-drm2 dbus-x11 mesa-utils libegl1-mesa
 sudo service dbus start
 
 # Install and configure XRDP
 echo "Installing and configuring XRDP..."
 sudo apt install -y xrdp
+
 sudo systemctl enable xrdp
 sudo systemctl start xrdp
 
