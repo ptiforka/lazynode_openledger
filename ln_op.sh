@@ -112,6 +112,9 @@ mkdir -p ~/.vnc
 echo "$password" | vncpasswd -f > ~/.vnc/passwd
 chmod 600 ~/.vnc/passwd
 
+
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xfonts-base xfonts-75dpi
+
 # Remove stale lock files
 echo "Cleaning up VNC lock files..."
 rm -f /tmp/.X1-lock /tmp/.X11-unix/X1
