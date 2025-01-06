@@ -1,3 +1,11 @@
+while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 \
+   || sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 \
+   || sudo fuser /var/cache/apt/archives/lock >/dev/null 2>&1
+do
+  echo "Another apt or dpkg process is running. Waiting 5 seconds..."
+  sleep 5
+done
+
 # Remove old Docker installations
 echo "Removing old Docker versions..."
 sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y docker docker-engine docker.io containerd runc || true
