@@ -161,8 +161,8 @@ if grep -q ":$OLD_PORT\b" config.yaml || grep -q "$OLD_PORT:$OLD_PORT" docker-co
 
   # Rebuild and restart Docker containers
   echo "Rebuilding and restarting Docker containers..."
-  docker compose down
-  docker compose up -d --build
+  docker stop opl_scraper opl_worker
+  docker rm opl_scraper opl_worker
 
   echo "Docker containers restarted successfully. Changes completed."
 else
