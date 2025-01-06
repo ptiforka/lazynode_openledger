@@ -175,7 +175,7 @@ fi
 
 # Continue with the rest of the script
 echo "Continuing with other operations..."
-
+cd
 # Launch OpenLedger Node in a screen session
 echo "Launching OpenLedger Node in a screen session..."
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends screen
