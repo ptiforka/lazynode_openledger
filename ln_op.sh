@@ -5,9 +5,9 @@ set -e
 export DEBIAN_FRONTEND=noninteractive
 
 # Remove old Docker installations
-#echo "Removing old Docker versions..."
-#sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y docker docker-engine docker.io containerd runc || true
-#sudo rm -rf /var/lib/docker /etc/docker
+echo "Removing old Docker versions..."
+sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y docker docker-engine docker.io containerd runc || true
+sudo rm -rf /var/lib/docker /etc/docker
 
 # Install required dependencies
 echo "Installing required dependencies..."
@@ -22,8 +22,6 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
 
 # Add Docker's official GPG key and repository
 echo "Adding Docker GPG key and repository..."
-# Add Docker's official GPG key and repository
-echo "Checking Docker GPG key and repository..."
 sudo mkdir -p /etc/apt/keyrings
 GPG_KEY_PATH="/etc/apt/keyrings/docker.gpg"
 
@@ -34,11 +32,6 @@ else
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee "$GPG_KEY_PATH" > /dev/null
     sudo chmod a+r "$GPG_KEY_PATH"
 fi
-
-echo \
-"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
 
 echo \
 "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
@@ -126,12 +119,17 @@ mkdir -p ~/.vnc
 echo "$password" | vncpasswd -f > ~/.vnc/passwd
 chmod 600 ~/.vnc/passwd
 
-
+# Install missing fonts
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xfonts-base xfonts-75dpi
 
 # Remove stale lock files
 echo "Cleaning up VNC lock files..."
 rm -f /tmp/.X1-lock /tmp/.X11-unix/X1
+
+sudo mkdir -p /var/lib/docker/tmp/
+sudo chown -R root:docker /var/lib/docker/tmp/
+sudo chmod -R 700 /var/lib/docker/tmp/
+sudo systemctl restart docker
 
 # Start VNC server
 echo "Starting VNC server..."
