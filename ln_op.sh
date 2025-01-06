@@ -1,9 +1,3 @@
-#!/bin/bash
-
-# Exit on error
-set -e
-export DEBIAN_FRONTEND=noninteractive
-
 # Remove old Docker installations
 echo "Removing old Docker versions..."
 sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y docker docker-engine docker.io containerd runc || true
@@ -23,14 +17,14 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
 # Add Docker's official GPG key and repository
 echo "Adding Docker GPG key and repository..."
 sudo mkdir -p /etc/apt/keyrings
-GPG_KEY_PATH="/etc/apt/keyrings/docker.gpg"
 
-if [[ -f "$GPG_KEY_PATH" ]]; then
-    echo "Docker GPG key already exists. Skipping overwrite."
+if [[ ! -f "/etc/apt/keyrings/docker.gpg" ]]; then
+    echo "Downloading and dearmoring Docker GPG key..."
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+        | sudo gpg --dearmor --batch --yes -o /etc/apt/keyrings/docker.gpg
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
 else
-    echo "Adding Docker GPG key..."
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee "$GPG_KEY_PATH" > /dev/null
-    sudo chmod a+r "$GPG_KEY_PATH"
+    echo "Docker GPG key already exists. Skipping overwrite."
 fi
 
 echo \
@@ -43,12 +37,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
 
 # Install Docker
 echo "Installing Docker..."
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io || {
-    echo "Docker installation failed. Check repository configuration or package availability."
-    exit 1
-}
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io
 sudo docker --version
-
 # Install additional dependencies for OpenLedger Node
 echo "Installing additional dependencies for OpenLedger Node..."
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
