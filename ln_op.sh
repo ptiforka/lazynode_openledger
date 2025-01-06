@@ -137,6 +137,43 @@ rm -f /tmp/.X1-lock /tmp/.X11-unix/X1
 echo "Starting VNC server..."
 vncserver :1
 
+#!/bin/bash
+
+# Navigate to the configuration directory
+cd ~/.config/opl || { echo "Failed to navigate to ~/.config/opl. Exiting."; exit 1; }
+
+# Define old and new ports
+OLD_PORT=8080
+NEW_PORT=9090
+
+# Check if the OLD_PORT exists in the files
+if grep -q ":$OLD_PORT\b" config.yaml || grep -q "$OLD_PORT:$OLD_PORT" docker-compose.yaml; then
+  echo "Old port $OLD_PORT found. Proceeding with changes..."
+
+  # Update config.yaml
+  echo "Updating config.yaml..."
+  sed -i "s/:$OLD_PORT\b/:$NEW_PORT/g" config.yaml
+  sed -i "s/http:\/\/opl_scraper:$OLD_PORT\b/http:\/\/opl_scraper:$NEW_PORT/g" config.yaml
+
+  # Update docker-compose.yaml
+  echo "Updating docker-compose.yaml..."
+  sed -i "s/$OLD_PORT:$OLD_PORT/$NEW_PORT:$OLD_PORT/g" docker-compose.yaml
+
+  # Verify changes
+  echo "Changes applied. Verifying..."
+  grep -E "$NEW_PORT|opl_scraper:$NEW_PORT" config.yaml docker-compose.yaml
+
+  # Rebuild and restart Docker containers
+  echo "Rebuilding and restarting Docker containers..."
+  docker compose down
+  docker compose up -d --build
+
+  echo "Docker containers restarted successfully. Changes completed."
+else
+  echo "Old port $OLD_PORT not found. No changes made."
+fi
+
+
 # Launch OpenLedger Node in a screen session
 echo "Launching OpenLedger Node in a screen session..."
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends screen
