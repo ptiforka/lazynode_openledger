@@ -139,43 +139,42 @@ CONFIG_DIR="$HOME/.config/opl"
 # Define old and new ports
 OLD_PORT=8080
 NEW_PORT=9090
-
 # Check if the configuration directory exists
 if [ ! -d "$CONFIG_DIR" ]; then
-  echo "Directory $CONFIG_DIR does not exist. Skipping changes."
-  exit 0
-fi
-
-# Navigate to the configuration directory
-cd "$CONFIG_DIR" || { echo "Failed to navigate to $CONFIG_DIR. Exiting."; exit 1; }
-
-# Check if the OLD_PORT exists in the files
-if grep -q ":$OLD_PORT\b" config.yaml || grep -q "$OLD_PORT:$OLD_PORT" docker-compose.yaml; then
-  echo "Old port $OLD_PORT found. Proceeding with changes..."
-
-  # Update config.yaml
-  echo "Updating config.yaml..."
-  sed -i "s/:$OLD_PORT\b/:$NEW_PORT/g" config.yaml
-  sed -i "s/http:\/\/opl_scraper:$OLD_PORT\b/http:\/\/opl_scraper:$NEW_PORT/g" config.yaml
-
-  # Update docker-compose.yaml
-  echo "Updating docker-compose.yaml..."
-  sed -i "s/$OLD_PORT:$OLD_PORT/$NEW_PORT:$OLD_PORT/g" docker-compose.yaml
-
-  # Verify changes
-  echo "Changes applied. Verifying..."
-  grep -E "$NEW_PORT|opl_scraper:$NEW_PORT" config.yaml docker-compose.yaml
-
-  # Restart Docker containers
-  echo "Rebuilding and restarting Docker containers..."
-  docker compose up -d --force-recreate
-
-  echo "Docker containers restarted successfully. Changes completed."
+  echo "Directory $CONFIG_DIR does not exist. Skipping port updates."
 else
-  echo "Old port $OLD_PORT not found. No changes made."
+  # Navigate to the configuration directory
+  cd "$CONFIG_DIR" || { echo "Failed to navigate to $CONFIG_DIR. Skipping port updates."; return; }
+
+  # Check if the OLD_PORT exists in the files
+  if grep -q ":$OLD_PORT\b" config.yaml || grep -q "$OLD_PORT:$OLD_PORT" docker-compose.yaml; then
+    echo "Old port $OLD_PORT found. Proceeding with changes..."
+
+    # Update config.yaml
+    echo "Updating config.yaml..."
+    sed -i "s/:$OLD_PORT\b/:$NEW_PORT/g" config.yaml
+    sed -i "s/http:\/\/opl_scraper:$OLD_PORT\b/http:\/\/opl_scraper:$NEW_PORT/g" config.yaml
+
+    # Update docker-compose.yaml
+    echo "Updating docker-compose.yaml..."
+    sed -i "s/$OLD_PORT:$OLD_PORT/$NEW_PORT:$OLD_PORT/g" docker-compose.yaml
+
+    # Verify changes
+    echo "Changes applied. Verifying..."
+    grep -E "$NEW_PORT|opl_scraper:$NEW_PORT" config.yaml docker-compose.yaml
+
+    # Restart Docker containers
+    echo "Rebuilding and restarting Docker containers..."
+    docker compose up -d --force-recreate
+
+    echo "Docker containers restarted successfully. Changes completed."
+  else
+    echo "Old port $OLD_PORT not found. Skipping port updates."
+  fi
 fi
 
-
+# Continue with the rest of the script
+echo "Continuing with other operations..."
 
 # Launch OpenLedger Node in a screen session
 echo "Launching OpenLedger Node in a screen session..."
