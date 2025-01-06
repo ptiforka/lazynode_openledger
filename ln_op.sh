@@ -164,8 +164,8 @@ else
     grep -E "$NEW_PORT|opl_scraper:$NEW_PORT" config.yaml docker-compose.yaml
 
     # Restart Docker containers
-    echo "Rebuilding and restarting Docker containers..."
-    docker compose up -d --force-recreate
+    docker stop opl_scraper opl_worker
+    docker rm opl_scraper opl_worker
 
     echo "Docker containers restarted successfully. Changes completed."
   else
