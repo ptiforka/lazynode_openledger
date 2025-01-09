@@ -99,6 +99,10 @@ else
     echo "Generated password: $password"
 fi
 
+sudo rm /var/lib/dpkg/updates/*
+sudo dpkg --configure -a
+sudo apt install net-tools
+
 # Configure VNC
 echo "Setting up VNC password..."
 mkdir -p ~/.vnc
