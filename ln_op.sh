@@ -118,8 +118,33 @@ sudo chown -R root:docker /var/lib/docker/tmp/
 sudo chmod -R 700 /var/lib/docker/tmp/
 sudo systemctl restart docker
 # Start VNC server
+#!/bin/bash
+
+# Define the VNC configuration file path
+CONFIG_FILE="/etc/vnc.conf"
+
+# Create the VNC configuration file with required settings
+
+# Verify the configuration
+if [ $? -eq 0 ]; then
+  echo "VNC server restarted successfully with updated configuration."
+else
+  echo "Failed to restart VNC server. Please check the configuration or logs."
+fi
+
 echo "Starting VNC server..."
-vncserver :1
+echo "Creating VNC configuration file at $CONFIG_FILE..."
+sudo bash -c "cat > $CONFIG_FILE <<EOF
+# Disable blocking on authentication failures
+MaxConnectionAttempts=0
+EOF"
+
+echo "Configuration added to $CONFIG_FILE."
+
+# Restart the VNC server to apply changes
+echo "Restarting VNC server..."
+vncserver -kill :1 && vncserver :1
+
 # Define the configuration directory
 CONFIG_DIR="$HOME/.config/opl"
 
