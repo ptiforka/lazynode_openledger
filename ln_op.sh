@@ -133,17 +133,31 @@ else
 fi
 
 echo "Starting VNC server..."
-echo "Creating VNC configuration file at $CONFIG_FILE..."
-sudo bash -c "cat > $CONFIG_FILE <<EOF
-# Disable blocking on authentication failures
-MaxConnectionAttempts=0
-EOF"
+# Define the VNC configuration file path
+CONFIG_FILE="/etc/vnc.conf"
 
-echo "Configuration added to $CONFIG_FILE."
+# Create the VNC configuration file if it doesn't exist
+if [ ! -f "$CONFIG_FILE" ]; then
+  echo "Creating $CONFIG_FILE..."
+  sudo touch "$CONFIG_FILE"
+fi
 
-# Restart the VNC server to apply changes
-echo "Restarting VNC server..."
-vncserver -kill :1 && vncserver :1
+# Add the MaxConnectionAttempts setting
+echo "Setting MaxConnectionAttempts to 0..."
+sudo bash -c "echo 'MaxConnectionAttempts=0' > $CONFIG_FILE"
+
+# Restart the VNC server
+echo "Restarting the VNC server..."
+vncserver -kill :1
+vncserver :1
+
+# Verify the configuration
+if [ $? -eq 0 ]; then
+  echo "VNC server restarted successfully with updated configuration."
+else
+  echo "Failed to restart the VNC server. Please check the logs."
+fi
+
 
 # Define the configuration directory
 CONFIG_DIR="$HOME/.config/opl"
