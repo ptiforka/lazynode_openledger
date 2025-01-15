@@ -112,6 +112,10 @@ sudo apt install net-tools
 echo "Setting up VNC password..."
 
 
+sudo DEBIAN_FRONTEND=noninteractive apt remove --purge tigervnc-standalone-server tigervnc-common -y
+sudo DEBIAN_FRONTEND=noninteractive apt install tigervnc-standalone-server tigervnc-common -y
+
+
 echo "Setting VNC password..."
 mkdir -p ~/.vnc
 echo -e "$password" | vncpasswd -f > ~/.vnc/passwd
@@ -159,6 +163,7 @@ sudo bash -c "echo 'MaxConnectionAttempts=0' > $CONFIG_FILE"
 mkdir -p ~/.vnc
 echo "localhost=no" >> ~/.vnc/config
 # Restart the VNC server
+
 
 PID=$(lsof -t -i :5901)
 
