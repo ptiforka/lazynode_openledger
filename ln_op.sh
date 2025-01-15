@@ -54,10 +54,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     libasound2
 # Download and install OpenLedger Node
 echo "Downloading and installing OpenLedger Node..."
-wget https://cdn.openledger.xyz/openledger-node-1.0.0-linux.zip -O openledger-node.zip || {
-    echo "Failed to download OpenLedger Node. Check the URL or network connection."
-    exit 1
-}
+curl -o openledger-node.zip https://cdn.openledger.xyz/openledger-node-1.0.0-linux.zip
+
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends unzip
 unzip -o openledger-node.zip
 sudo DEBIAN_FRONTEND=noninteractive dpkg -i openledger-node-1.0.0.deb || sudo DEBIAN_FRONTEND=noninteractive apt-get install -f -y
