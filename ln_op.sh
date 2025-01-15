@@ -5,6 +5,8 @@ do
   echo "Another apt or dpkg process is running. Waiting 5 seconds..."
   sleep 5
 done
+
+sudo DEBIAN_FRONTEND=noninteractive apt -y remove tightvncserver
 # Remove old Docker installations
 echo "Removing old Docker versions..."
 sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y docker docker-engine docker.io containerd runc || true
@@ -62,11 +64,16 @@ sudo DEBIAN_FRONTEND=noninteractive dpkg -i openledger-node-1.0.0.deb || sudo DE
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends desktop-file-utils
 sudo DEBIAN_FRONTEND=noninteractive dpkg --configure -a
 # Install and configure VNC and XFCE
+
 echo "Installing VNC and XFCE..."
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    tightvncserver \
+    tigervnc-standalone-server \
+    tigervnc-xorg-extension \
+    tigervnc-standalone-server \
+    tigervnc-xorg-extension \
     xfce4 \
     xfce4-goodies \
+    xterm \
     mesa-utils \
     libgl1-mesa-glx \
     vainfo \
@@ -103,9 +110,14 @@ sudo apt install net-tools
 
 # Configure VNC
 echo "Setting up VNC password..."
+
+
+echo "Setting VNC password..."
 mkdir -p ~/.vnc
-echo "$password" | vncpasswd -f > ~/.vnc/passwd
+echo -e "$password" | vncpasswd -f > ~/.vnc/passwd
 chmod 600 ~/.vnc/passwd
+echo "VNC password set."
+
 # Install missing fonts
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xfonts-base xfonts-75dpi
 # Remove stale lock files
@@ -144,7 +156,21 @@ fi
 echo "Setting MaxConnectionAttempts to 0..."
 sudo bash -c "echo 'MaxConnectionAttempts=0' > $CONFIG_FILE"
 
+mkdir -p ~/.vnc
+echo "localhost=no" >> ~/.vnc/config
 # Restart the VNC server
+
+PID=$(lsof -t -i :5901)
+
+if [ -n "$PID" ]; then
+    echo "Found VNC server running on display :1 with PID: $PID"
+    echo "Killing the process..."
+    kill -9 $PID
+    echo "Process $PID terminated."
+else
+    echo "No VNC server found on display :1."
+fi
+
 echo "Restarting the VNC server..."
 vncserver -kill :1
 vncserver :1
